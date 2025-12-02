@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 require_once 'conexion.php';
 
-function enviarExpo($expoToken, $mensaje, $titulo = "Recordatorio") {
+function enviarExpo($expoToken, $mensaje, $titulo) {
     $data = [
         "to" => $expoToken,
         "sound" => "default",
@@ -38,17 +38,18 @@ function enviarExpo($expoToken, $mensaje, $titulo = "Recordatorio") {
 }
 
 try {
-    $sql = "SELECT r.id, r.motivo, i.usuario_id, u.expotoken, r.fecha, r.hora
+    $sql = "SELECT r.id, r.motivo, i.usuario_id, u.expotoken, r.fecha, r.hora,c.nombre_fantasia
             FROM recordatorios r
             JOIN interacciones i ON r.interaccion_id = i.id
             JOIN usuario u ON u.id = i.usuario_id
+			JOIN cliente c ON c.direccion = i.cliente_direccion
             WHERE r.fecha <= NOW()";
     $stmt = $conn->query($sql);
     $recordatorios = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 foreach ($recordatorios as $r) {
     if (empty($r['expotoken'])) continue;
-    $resultado = enviarExpo($r['expotoken'], $r['motivo']);
+    $resultado = enviarExpo($r['expotoken'], $r['motivo'],['nombre_fantasia']);
     if (!isset($resultado['errors'])) {
         $update = $conn->prepare("UPDATE recordatorios SET enviado = true WHERE id = :id");
         $update->execute(['id' => $r['id']]);
