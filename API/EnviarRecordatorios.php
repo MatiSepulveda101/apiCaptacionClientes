@@ -23,19 +23,28 @@ function enviarExpo($expoToken, $mensaje, $titulo) {
 
     $ch = curl_init("https://exp.host/--/api/v2/push/send");
     curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, ["Content-Type: application/json"]);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        "Content-Type: application/json",
+        "Accept: application/json",
+        "User-Agent: PHP-cURL"
+    ]);
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
     $response = curl_exec($ch);
+
     if ($response === false) {
-        $error = curl_error($ch);
-        curl_close($ch);
-        return ['success' => false, 'error' => $error];
+        return ['success' => false, 'error' => curl_error($ch)];
     }
+
     curl_close($ch);
+
+    // Esto es CLAVE → para ver qué responde Expo
+    error_log("Expo response: " . $response);
+
     return json_decode($response, true);
 }
+
 
 try {
     $sql = "SELECT r.id, r.motivo, i.usuario_id, u.expotoken, r.fecha, r.hora,c.nombre_fantasia
