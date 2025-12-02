@@ -57,7 +57,8 @@ try {
     r.fecha, 
     r.hora,
     r.minutos_antes,
-    c.nombre_fantasia
+    c.nombre_fantasia,
+    (r.fecha + r.hora - (r.minutos_antes || ' minutes')::interval) AS fecha_restar
 FROM recordatorios r
 JOIN interacciones i ON r.interaccion_id = i.id
 JOIN usuario u ON u.id = i.usuario_id
@@ -65,7 +66,8 @@ JOIN cliente c ON c.direccion = i.cliente_direccion
 WHERE 
     r.fecha = CURRENT_DATE
     AND r.enviado = false
-    AND (r.fecha + r.hora - (r.minutos_antes || ' minutes')::interval) <= NOW();
+    AND (r.fecha + r.hora - (r.minutos_antes || ' minutes')::interval) 
+        <= (NOW() AT TIME ZONE 'America/Santiago');
 ";
     $stmt = $conn->query($sql);
     $recordatorios = $stmt->fetchAll(PDO::FETCH_ASSOC);
