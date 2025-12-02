@@ -40,14 +40,8 @@ function enviarExpo($expoToken, $mensaje, $titulo)
     }
 
     curl_close($ch);
-
-    // Esto es CLAVE → para ver qué responde Expo
-    error_log("Expo response: " . $response);
-
     return json_decode($response, true);
 }
-
-
 try {
     $sql = "SELECT 
     r.id, 
@@ -73,9 +67,15 @@ WHERE
     $recordatorios = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     foreach ($recordatorios as $r) {
-        if (empty($r['expotoken']))
-            continue;
-        $resultado = enviarExpo($r['expotoken'], $r['motivo'], $r['nombre_fantasia']);
+
+        if (empty($r['expotoken'])) continue;
+
+        $horaRecordatorio = substr($r['hora'], 0, 5);
+
+        $mensaje = " Recordatorio para las " . $horaRecordatorio . ": " . $r['motivo'];
+
+        $resultado = enviarExpo($r['expotoken'], $mensaje, $r['nombre_fantasia']);
+
         if (!isset($resultado['errors'])) {
             $update = $conn->prepare("UPDATE recordatorios SET enviado = true WHERE id = :id");
             $update->execute(['id' => $r['id']]);
@@ -84,9 +84,9 @@ WHERE
         }
     }
 
-
     echo json_encode(['success' => true, 'count' => count($recordatorios)]);
 
 } catch (PDOException $e) {
     echo json_encode(['success' => false, 'error' => $e->getMessage()]);
 }
+
