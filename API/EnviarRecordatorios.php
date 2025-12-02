@@ -49,7 +49,7 @@ try {
 
 foreach ($recordatorios as $r) {
     if (empty($r['expotoken'])) continue;
-    $resultado = enviarExpo($r['expotoken'], $r['motivo'],['nombre_fantasia']);
+    $resultado = enviarExpo($r['expotoken'], $r['motivo'], $r['nombre_fantasia']);
     if (!isset($resultado['errors'])) {
         $update = $conn->prepare("UPDATE recordatorios SET enviado = true WHERE id = :id");
         $update->execute(['id' => $r['id']]);
