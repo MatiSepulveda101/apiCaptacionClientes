@@ -47,8 +47,7 @@ try {
 JOIN interacciones i ON r.interaccion_id = i.id
 JOIN usuario u ON u.id = i.usuario_id
 JOIN cliente c ON c.direccion = i.cliente_direccion
-WHERE i.usuario_id = :id_usuario
-            ";
+WHERE vigente = true AND i.usuario_id = :id_usuario";
 
     $stmt = $conn->prepare($sql);
 
