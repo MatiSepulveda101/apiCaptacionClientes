@@ -42,7 +42,8 @@ try {
     i.usuario_id,  
     r.fecha, 
     r.hora,
-    c.nombre_fantasia
+    c.nombre_fantasia,
+	r.finalizado
     FROM recordatorios r
 JOIN interacciones i ON r.interaccion_id = i.id
 JOIN usuario u ON u.id = i.usuario_id
