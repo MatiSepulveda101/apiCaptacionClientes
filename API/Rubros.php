@@ -135,7 +135,7 @@ try {
 
         $id = (int)$id;
 
-        $stmt = $conn->prepare("UPDATE rubros SET vigente = 0 WHERE id = :id");
+        $stmt = $conn->prepare("UPDATE rubros SET vigente = false WHERE id = :id");
         $stmt->execute([':id' => $id]);
 
         echo json_encode(['success' => true]);
