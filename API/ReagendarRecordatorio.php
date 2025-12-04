@@ -81,8 +81,8 @@ try {
     ]);
 
     $sqlUpdate = "UPDATE recordatorios
-                  SET enviado = false,
-                      vigente = true,
+                  SET enviado = :enviado,
+                      vigente = :vigente,
                       fecha = :fecha,
                       hora = :hora,
                       minutos_antes = :minutos_antes,
@@ -94,7 +94,9 @@ try {
         ':hora'  => $hora,
         ':minutos_antes' => $minutos_antes,
         ':motivo' => $nuevo_motivo,
-        ':id' => $id_recordatorio
+        ':id' => $id_recordatorio,
+        ':enviado' => false,
+        ':vigente' => true,
     ]);
 
     $conn->commit();
