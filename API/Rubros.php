@@ -36,7 +36,7 @@ try {
     // GET - Obtener lista completa
     // ================================
     if ($method === 'GET') {
-        $stmt = $conn->query("SELECT id, nombre, vigente FROM rubros WHERE vigente = 1 ORDER BY nombre ASC");
+        $stmt = $conn->query("SELECT id, nombre, vigente FROM rubros WHERE vigente = true ORDER BY nombre ASC");
         echo json_encode(['success' => true, 'data' => $stmt->fetchAll(PDO::FETCH_ASSOC)]);
         exit;
     }
