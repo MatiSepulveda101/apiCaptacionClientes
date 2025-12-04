@@ -95,8 +95,8 @@ try {
         ':minutos_antes' => $minutos_antes,
         ':motivo' => $nuevo_motivo,
         ':id' => $id_recordatorio,
-        ':enviado' => false,
-        ':vigente' => true,
+        ':enviado' => 0,
+        ':vigente' => 1,
     ]);
 
     $conn->commit();
