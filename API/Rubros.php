@@ -12,11 +12,13 @@ require_once 'verificar_token.php';
 require_once 'conexion.php';
 
 $usuario = verificarToken();
+
+// aceptar ambos nombres según el token
 $tipoUsuarioId = $usuario->tipousuario_id ?? $usuario->TipoUsuario_id ?? null;
 
-// Solo roles 1 y 2 pueden modificar
+// Solo GET es público; POST/PUT/DELETE requieren roles 1 y 2
 $soloLectura = ($_SERVER['REQUEST_METHOD'] === 'GET');
-if (!$soloLectura && !in_array($tipoUsuarioId, haystack: [1])) {
+if (!$soloLectura && !in_array($tipoUsuarioId, [1, 2])) {
     http_response_code(403);
     echo json_encode(['success' => false, 'error' => 'Acceso denegado']);
     exit;
@@ -34,13 +36,13 @@ try {
     // GET - Obtener lista completa
     // ================================
     if ($method === 'GET') {
-        $stmt = $conn->query("SELECT id, nombre, vigente FROM rubros ORDER BY nombre ASC");
+        $stmt = $conn->query("SELECT id, nombre, vigente FROM rubros WHERE vigente = 1 ORDER BY nombre ASC");
         echo json_encode(['success' => true, 'data' => $stmt->fetchAll(PDO::FETCH_ASSOC)]);
         exit;
     }
 
     // Leer JSON
-    $input = json_decode(file_get_contents('php://input'), true);
+    $input = json_decode(file_get_contents('php://input'), true) ?? [];
 
     // ================================
     // POST - Crear rubro
@@ -62,8 +64,12 @@ try {
         }
 
         // Verificar duplicado vigente
-        $stmt = $conn->prepare("SELECT id FROM rubros WHERE LOWER(TRIM(nombre)) = :nombre AND vigente = 1");
+        $stmt = $conn->prepare("
+            SELECT id FROM rubros 
+            WHERE LOWER(TRIM(nombre)) = :nombre AND vigente = 1
+        ");
         $stmt->execute([':nombre' => $nombre]);
+
         if ($stmt->fetch()) {
             http_response_code(409);
             echo json_encode(['success' => false, 'error' => 'Ya existe un rubro vigente con ese nombre']);
@@ -91,9 +97,15 @@ try {
         $id = (int)$input['id'];
         $nombre = normalizarNombre($input['nombre']);
 
-        // Verificar duplicado (excluyendo el mismo id)
-        $stmt = $conn->prepare("SELECT id FROM rubros WHERE LOWER(TRIM(nombre)) = :nombre AND vigente = 1 AND id != :id");
+        // Verificar duplicado excluyendo el propio ID
+        $stmt = $conn->prepare("
+            SELECT id FROM rubros
+            WHERE LOWER(TRIM(nombre)) = :nombre
+            AND vigente = 1
+            AND id != :id
+        ");
         $stmt->execute([':nombre' => $nombre, ':id' => $id]);
+
         if ($stmt->fetch()) {
             http_response_code(409);
             echo json_encode(['success' => false, 'error' => 'Ya existe otro rubro vigente con ese nombre']);
@@ -108,19 +120,21 @@ try {
     }
 
     // ================================
-    // DELETE - Eliminar rubro
+    // DELETE - Eliminado lógico
     // ================================
     if ($method === 'DELETE') {
 
-        if (!isset($input['id'])) {
+        // Acepta ID desde JSON o desde ?id= por compatibilidad
+        $id = $_GET['id'] ?? $input['id'] ?? null;
+
+        if (!$id) {
             http_response_code(400);
             echo json_encode(['success' => false, 'error' => 'Falta id']);
             exit;
         }
 
-        $id = (int)$input['id'];
+        $id = (int)$id;
 
-        // Eliminado lógico (vigente = 0)
         $stmt = $conn->prepare("UPDATE rubros SET vigente = 0 WHERE id = :id");
         $stmt->execute([':id' => $id]);
 
@@ -128,7 +142,9 @@ try {
         exit;
     }
 
-    // Si llega aquí, método no permitido
+    // ================================
+    // Método no permitido
+    // ================================
     http_response_code(405);
     echo json_encode(['success' => false, 'error' => 'Método no permitido']);
 
