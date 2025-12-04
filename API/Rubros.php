@@ -66,7 +66,7 @@ try {
         // Verificar duplicado vigente
         $stmt = $conn->prepare("
             SELECT id FROM rubros 
-            WHERE LOWER(TRIM(nombre)) = :nombre AND vigente = 1
+            WHERE LOWER(TRIM(nombre)) = :nombre AND vigente = true
         ");
         $stmt->execute([':nombre' => $nombre]);
 
@@ -101,7 +101,7 @@ try {
         $stmt = $conn->prepare("
             SELECT id FROM rubros
             WHERE LOWER(TRIM(nombre)) = :nombre
-            AND vigente = 1
+            AND vigente = true
             AND id != :id
         ");
         $stmt->execute([':nombre' => $nombre, ':id' => $id]);
