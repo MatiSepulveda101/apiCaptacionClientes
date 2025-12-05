@@ -60,6 +60,8 @@ JOIN cliente c ON c.direccion = i.cliente_direccion
 WHERE 
     r.fecha = CURRENT_DATE
     AND r.enviado = false
+    AND r.finalizado = false
+    AND r.vigente = true
     AND (r.fecha + r.hora - (r.minutos_antes || ' minutes')::interval) 
         <= (NOW() AT TIME ZONE 'America/Santiago');
 ";
