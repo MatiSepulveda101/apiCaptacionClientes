@@ -125,7 +125,7 @@ try {
 
         $id = (int)$id;
 
-        $stmt = $conn->prepare("SELECT COUNT(*) FROM clientes WHERE rubro_id = :id");
+        $stmt = $conn->prepare("SELECT COUNT(*) FROM cliente WHERE rubro_id = :id");
         $stmt->execute([':id' => $id]);
         $count = (int) $stmt->fetchColumn();
 
